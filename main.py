@@ -3,6 +3,7 @@ from PIL import Image as PIL_Image
 from drafter import *
 from bakery import assert_equal
 import os
+import io
 
 set_site_information(
     author="Andrew Tsomik (personal_email:andrew.tsomik@gmail.com, school_email:atsomik@udel.edu)",
@@ -127,6 +128,8 @@ def get_encoded_message(color_intensities : list[int]) -> str:
         str: decoded message
     """
     message_length = get_message_length(color_intensities[:24], 3)
+    if message_length == 0:
+        return None
     message = decode_chars(color_intensities[24:(24 + 8 * message_length)], message_length)
     return message
 
@@ -316,12 +319,12 @@ def encode(state : State, message="") -> Page:
         state.encoding,
         "Message hidden in file encoded: " + state.secret_message,
         Image(state.image),
-        "Would you like to encode again or decode another image, or go back to the start, if encoding or decoding please upload your image.",
+        "Would you like to encode again or decode another image, or go back to the start?",
         "If encoding, please input your message you want encrypted",
         Button("Back to start page", index),
         TextBox("message"),
-        Button("Encode", input_image_encoding),
-        Button("Decode", input_image_decoding),
+        Button("Encode another", input_image_encoding),
+        Button("Decode another", input_image_decoding),
         FileUpload("new_image", accept="image/png")
         ])
 
@@ -329,39 +332,45 @@ def encode(state : State, message="") -> Page:
 def decode(state : State) -> Page:
     """ will decode images """
     state.decoding_count += 1
-    state.encoding = "Here is your decoded image's secret message!"
-    if get_encoded_message(get_color_values(state.image, 1)) != None:
+    if state.image is None:
+        return Page(state, [
+            "Error: No image loaded. Please upload an image first.",
+            Button("Back to start page", index)
+            ])
+    
+    decoded_message = get_encoded_message(get_color_values(state.image, 1))
+    if decoded_message is not None:
         state.encoding = "Here is your decoded image's secret message!"
-        state.secret_message = get_encoded_message(get_color_values(state.image, 1))
+        state.secret_message = decoded_message
         state.image.save(str(state.decoding_count) + "_decoded_file.png")
         return Page(state, [
             state.encoding,
             "Secret Message: " + state.secret_message,
-            "Would you like to decode again or encode another image, or go back to the start, if encoding or decoding please upload your image.",
+            "Would you like to decode again or encode another image, or go back to the start?",
             "If encoding, please input your message you want encrypted",
             Button("Back to start page", index),
             TextBox("message"),
-            Button("Encode", input_image_encoding),
-            Button("Decode", input_image_decoding),
+            Button("Encode another", input_image_encoding),
+            Button("Decode another", input_image_decoding),
             FileUpload("new_image", accept="image/png")
             ])
+    
     state.encoding = "There is no encoded message in this image"
     return Page(state, [
-            state.encoding,
-            "Would you like to decode again or encode another image, or go back to the start, if encoding or decoding please upload your image.",
-            "If encoding, please input your message you want encrypted",
-            Button("Back to start page", index),
-            TextBox("message"),
-            Button("Encode", input_image_encoding),
-            Button("Decode", input_image_decoding),
-            FileUpload("new_image", accept="image/png")
-            ])
+        state.encoding,
+        "Would you like to decode again or encode another image, or go back to the start?",
+        "If encoding, please input your message you want encrypted",
+        Button("Back to start page", index),
+        TextBox("message"),
+        Button("Encode another", input_image_encoding),
+        Button("Decode another", input_image_decoding),
+        FileUpload("new_image", accept="image/png")
+        ])
 
 @route
 def input_image_encoding(state : State, new_image: bytes, message: str) -> Page:
     """allows user to input image for encoding"""
     state.image = PIL_Image.open(io.BytesIO(new_image)).convert('RGB')
-
     state.message_to_encode = message
     return Page(state, [
         "Image:",
@@ -373,7 +382,6 @@ def input_image_encoding(state : State, new_image: bytes, message: str) -> Page:
 def input_image_decoding(state : State, new_image: bytes, message="") -> Page:
     """allows user to input image for decoding"""
     state.image = PIL_Image.open(io.BytesIO(new_image)).convert('RGB')
-
     return Page(state, [
         "Image:",
         Image(state.image),
