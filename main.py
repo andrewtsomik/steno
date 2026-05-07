@@ -73,7 +73,7 @@ def decode_chars(color_intensities : list[int], character_count : int) -> Option
         character_count (int): how many characters need to be decoded
 
     Returns:
-        Decoded version of the list color intensities
+        str: Decoded version of the list color intensities
     """
     if len(color_intensities) != (8 * character_count):
         return None
@@ -147,12 +147,12 @@ assert_equal(get_encoded_message([254, 254, 255, 255, 254, 254, 254, 254,
                            254, 254, 254, 254, 254, 254, 254, 254, 
                            252]), "Hi" )
 
-def get_color_values(image : Optional[PIL_Image], channel_index : int) -> list[int]:
+def get_color_values(image : PIL_Image, channel_index : int) -> list[int]:
     '''
     This function obtains the color intensities of a certain channel(red, green, or blue) of an image and outputs them as a list of integers
     
     Args:
-        image(Optional[PIL_Image]) : An image
+        image(PIL_Image) : An image
         channel_index(int) : Integers 0, 1, or 2 that correspond to a given channel of an image, red, green, and blue respectively
     
     Returns:
@@ -250,16 +250,16 @@ assert_equal(new_color_value(250, '0'), 250)
 assert_equal(new_color_value(251, '1'), 251)
 assert_equal(new_color_value(251, '0'), 250)
 
-def hide_bits(image : Optional[PIL_Image], hidden_bit : str) -> Optional[PIL_Image]:
+def hide_bits(image : PIL_Image, hidden_bit : str) -> PIL_Image:
     """
     Function hides a message in the form of bits into an image
     Function cannot be unit tested
     Args:
-        image (Optional[PIL_Image]): inputted image
+        image (PIL_Image): inputted image
         hidden_bit (str): a bit, '0' or '1'
     
     Returns:
-        Optional[PIL_Image]: encrypted image
+        PIL_Image: encrypted image
     """
     i = 0
     length, width = image.size
