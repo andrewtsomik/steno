@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from PIL import Image as PIL_Image 
 from drafter import *
 from bakery import assert_equal
+from typing import Optional
 import os
 import io
 
@@ -62,7 +63,7 @@ assert_equal(decode_single_char([46, 47, 46, 46, 47, 44, 46, 44, 43]), "")
 assert_equal(decode_single_char([]), "")
 assert_equal(decode_single_char([22, 22, 23, 23, 22, 22, 23, 22]), "2")
 
-def decode_chars(color_intensities : list[int], character_count : int) -> str:
+def decode_chars(color_intensities : list[int], character_count : int) -> Optional[str]:
     """
     Converts color intensities into 1's and 0's based on if they are odd or even (1 if odd, 0 if even) which is the list of intensities in binary and 
     then converts it base 2 form and converts that value into its corresponding ASCII value for all set of 8 integers in the color_intensities list and then combines them
@@ -85,6 +86,7 @@ def decode_chars(color_intensities : list[int], character_count : int) -> str:
             if index == len(color_intensities) - 1:
                 return decoded_characters
             intensity = []
+    return decoded_characters
 
 assert_equal(decode_chars([22, 22, 23, 23, 22, 22, 23, 22, 26, 26, 27, 27, 26, 27, 26, 27, 42, 42, 43, 43, 44, 44, 40, 42], 3), "250")
 assert_equal(decode_chars([22, 22, 23, 23, 22, 22, 23, 22, 26, 26, 27, 27, 26, 27, 26, 27, 42, 42, 43, 43, 44, 44, 40], 3), None)
@@ -117,7 +119,7 @@ assert_equal(get_message_length([22, 22, 23, 23, 22, 22, 23, 22, 26, 26, 27, 27,
 assert_equal(get_message_length([22, 22, 23, 23, 22, 22, 23, 22, 26, 26, 27, 27, 26, 27, 26, 27, 42, 42, 43, 43, 44, 44, 40], 3), 0)
 assert_equal(get_message_length([22, 22, 23, 23, 22, 22, 23, 22, 26, 26, 27, 27, 26, 27, 26, 27, 42, 42, 43, 43, 44, 44, 40, 42, 46, 47, 46, 46, 47, 44, 46, 44], 4), 0)
 
-def get_encoded_message(color_intensities : list[int]) -> str:
+def get_encoded_message(color_intensities : list[int]) -> Optional[str]:
     """
     Gets the length of the remaining message from the first 24 color intensities then decodes the appropriate amount of intensities to decode the message
     
@@ -145,12 +147,12 @@ assert_equal(get_encoded_message([254, 254, 255, 255, 254, 254, 254, 254,
                            254, 254, 254, 254, 254, 254, 254, 254, 
                            252]), "Hi" )
 
-def get_color_values(image : PIL_Image, channel_index : int) -> list[int]:
+def get_color_values(image : Optional[PIL_Image], channel_index : int) -> list[int]:
     '''
     This function obtains the color intensities of a certain channel(red, green, or blue) of an image and outputs them as a list of integers
     
     Args:
-        image(PIL_Image) : An image
+        image(Optional[PIL_Image]) : An image
         channel_index(int) : Integers 0, 1, or 2 that correspond to a given channel of an image, red, green, and blue respectively
     
     Returns:
@@ -248,16 +250,16 @@ assert_equal(new_color_value(250, '0'), 250)
 assert_equal(new_color_value(251, '1'), 251)
 assert_equal(new_color_value(251, '0'), 250)
 
-def hide_bits(image : PIL_Image, hidden_bit : str) -> PIL_Image:
+def hide_bits(image : Optional[PIL_Image], hidden_bit : str) -> Optional[PIL_Image]:
     """
     Function hides a message in the form of bits into an image
     Function cannot be unit tested
     Args:
-        image (PIL_Image): inputted image
+        image (Optional[PIL_Image]): inputted image
         hidden_bit (str): a bit, '0' or '1'
     
     Returns:
-        PIL_Image: encrypted image
+        Optional[PIL_Image]: encrypted image
     """
     i = 0
     length, width = image.size
@@ -272,7 +274,7 @@ def hide_bits(image : PIL_Image, hidden_bit : str) -> PIL_Image:
 
 @dataclass
 class State:
-    image: PIL_Image
+    image: Optional[PIL_Image]
     encoding: str
     message_to_encode: str
     secret_message: str
